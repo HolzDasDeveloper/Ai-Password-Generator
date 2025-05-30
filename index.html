@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Passwort Generator</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #121212;
+      color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem;
+    }
+
+    input, button {
+      padding: 0.7rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+
+    #output {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      color: #00ff99;
+      word-break: break-word;
+    }
+
+    .info-box {
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #1e1e1e;
+      border-left: 5px solid #00ff99;
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    .info-box h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #00ff99;
+    }
+
+    .info-box ul {
+      padding-left: 1.2rem;
+    }
+
+    .info-box li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 AI Passwort Generator</h1>
+
+  <input type="text" id="promptInput" placeholder='z.B. tost, 10' />
+  <button onclick="generate()">🚀 Generieren</button>
+  <div id="output"></div>
+  <button onclick="copyToClipboard()">📋 Kopieren</button>
+
+  <div class="info-box">
+    <h2>ℹ️ Tipps zur Nutzung:</h2>
+    <ul>
+      <li>Gib den Prompt im Format <code>keyword, länge</code> ein</li>
+      <li>Beispiel: <code>tost, 12</code></li>
+      <li>Die Länge muss eine <strong>Zahl zwischen 6 und 32</strong> sein</li>
+      <li><strong>Keine Wörter wie "10 Zeichen"</strong> – nur die Zahl (z. B. <code>10</code>)</li>
+      <li>Das Keyword bleibt im Passwort enthalten, der Rest wird zufällig ergänzt</li>
+    </ul>
+  </div>
+
+  <script>
+    function generate() {
+      const prompt = document.getElementById('promptInput').value;
+      const output = document.getElementById('output');
+
+      const parts = prompt.split(',');
+      if (parts.length < 2) {
+        output.textContent = '❌ Format: "keyword, länge"';
+        return;
+      }
+
+      const keyword = parts[0].trim();
+      const length = parseInt(parts[1].trim());
+
+      if (isNaN(length) || length < keyword.length || length > 32) {
+        output.textContent = '❌ Länge ungültig (muss zwischen ' + keyword.length + ' und 32 sein).';
+        return;
+      }
+
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!§$%&*#";
+      let password = keyword;
+
+      while (password.length < length) {
+        const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+        password += randomChar;
+      }
+
+      // Shuffle
+      password = password.split('').sort(() => Math.random() - 0.5).join('');
+      output.textContent = password;
+    }
+
+    function copyToClipboard() {
+      const text = document.getElementById('output').textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Passwort kopiert!');
+      });
+    }
+  </script>
+</body>
+</html>
