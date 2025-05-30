@@ -57,7 +57,7 @@
 <body>
   <h1>🔐 AI Passwort Generator</h1>
 
-  <input type="text" id="promptInput" placeholder='z.B. tost, 10' />
+  <input type="text" id="promptInput" placeholder='z.B. Triggel, 12' />
   <button onclick="generate()">🚀 Generieren</button>
   <div id="output"></div>
   <button onclick="copyToClipboard()">📋 Kopieren</button>
@@ -65,13 +65,21 @@
   <div class="info-box">
     <h2>ℹ️ Tipps zur Nutzung:</h2>
     <ul>
-      <li>Gib den Prompt im Format <code>keyword, länge</code> ein</li>
-      <li>Beispiel: <code>tost, 12</code></li>
-      <li>Die Länge muss eine <strong>Zahl zwischen 6 und 32</strong> sein</li>
-      <li><strong>Keine Wörter wie "10 Zeichen"</strong> – nur die Zahl (z. B. <code>10</code>)</li>
-      <li>Das Keyword bleibt im Passwort enthalten, der Rest wird zufällig ergänzt</li>
+      <li>Format: <code>keyword, länge</code></li>
+      <li>Beispiel: <code>Triggel, 12</code></li>
+      <li>Länge: <strong>zwischen 6 und 32</strong>, keine Wörter wie "10 Zeichen"</li>
+      <li>Keyword bleibt vorn, z. B. <code>Triggel7124!</code></li>
     </ul>
   </div>
+
+  <h2 style="margin-top:3rem;">🔍 Passwort-Sicherheitsprüfung</h2>
+  <input type="text" id="checkInput" placeholder="Gib ein Passwort ein..." />
+  <button onclick="checkStrength()">🧠 Prüfen</button>
+
+  <div id="strengthBar" style="width: 300px; height: 20px; background: #333; margin-top: 1rem; border-radius: 4px; overflow: hidden;">
+    <div id="barFill" style="width: 0%; height: 100%; background: red;"></div>
+  </div>
+  <div id="strengthText" style="margin-top: 0.5rem; font-weight: bold;"></div>
 
   <script>
     function generate() {
@@ -88,21 +96,30 @@
       const length = parseInt(parts[1].trim());
 
       if (isNaN(length) || length < keyword.length || length > 32) {
-        output.textContent = '❌ Länge ungültig (muss zwischen ' + keyword.length + ' und 32 sein).';
+        output.textContent = '❌ Ungültige Länge (zwischen Keyword-Länge und 32)';
         return;
       }
 
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!§$%&*#";
-      let password = keyword;
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*()_-+=<>?/";
 
-      while (password.length < length) {
-        const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
-        password += randomChar;
+      const remaining = length - keyword.length;
+
+      let numberPart = "";
+      let symbolPart = "";
+
+      if (remaining >= 3) {
+        numberPart = Array.from({length: remaining - 1}, () => numbers[Math.floor(Math.random() * numbers.length)]).join('');
+        symbolPart = symbols[Math.floor(Math.random() * symbols.length)];
+      } else if (remaining === 2) {
+        numberPart = numbers[Math.floor(Math.random() * numbers.length)];
+        symbolPart = symbols[Math.floor(Math.random() * symbols.length)];
+      } else if (remaining === 1) {
+        symbolPart = symbols[Math.floor(Math.random() * symbols.length)];
       }
 
-      // Shuffle
-      password = password.split('').sort(() => Math.random() - 0.5).join('');
-      output.textContent = password;
+      const finalPassword = keyword + numberPart + symbolPart;
+      output.textContent = finalPassword;
     }
 
     function copyToClipboard() {
@@ -111,6 +128,35 @@
       navigator.clipboard.writeText(text).then(() => {
         alert('✅ Passwort kopiert!');
       });
+    }
+
+    function checkStrength() {
+      const password = document.getElementById("checkInput").value;
+      const bar = document.getElementById("barFill");
+      const text = document.getElementById("strengthText");
+
+      let strength = 0;
+
+      if (password.length >= 8) strength += 1;
+      if (/[A-Z]/.test(password)) strength += 1;
+      if (/[0-9]/.test(password)) strength += 1;
+      if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+      if (password.length >= 12) strength += 1;
+
+      let color = "red";
+      let message = "❌ Schwach";
+
+      if (strength >= 4) {
+        color = "green";
+        message = "✅ Stark";
+      } else if (strength >= 2) {
+        color = "orange";
+        message = "⚠️ Okay";
+      }
+
+      bar.style.width = `${(strength / 5) * 100}%`;
+      bar.style.background = color;
+      text.textContent = message;
     }
   </script>
 </body>
